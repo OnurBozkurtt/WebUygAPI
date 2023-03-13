@@ -83,10 +83,13 @@ namespace WebUygAPI.Controllers
                 var o2 = JsonConvert.SerializeObject(o1);
             }
             var json = System.IO.File.ReadAllText(filePath);
-
             List<DrawInfo> info = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
             Random random= new Random();
             draw.Id = random.Next();
+            if(info == null) 
+            { 
+                return NotFound(); 
+            }
             var result = System.Text.Json.JsonSerializer.Serialize(draw);
             info.Add(draw);
             string changedJson = System.Text.Json.JsonSerializer.Serialize(info, new JsonSerializerOptions() { WriteIndented = true });
@@ -114,8 +117,9 @@ namespace WebUygAPI.Controllers
             var upDraw = info.FirstOrDefault(x => x.Id == id);
 
             if(upDraw != null) {
-                upDraw.username = draw.username;
+                upDraw.Name = draw.Name;
                 upDraw.number = draw.number;
+                upDraw.coordinates = draw.coordinates;
             }
        
             string changedJson = System.Text.Json.JsonSerializer.Serialize(info, new JsonSerializerOptions() { WriteIndented = true });
