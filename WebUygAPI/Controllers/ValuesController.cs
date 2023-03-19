@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebUygAPI.Models;
 using System;
@@ -18,6 +18,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.JsonPatch;
 using System.Globalization;
 using System.Runtime.Intrinsics.Arm;
+using sun.swing;
 
 namespace WebUygAPI.Controllers
 {
@@ -49,86 +50,110 @@ namespace WebUygAPI.Controllers
             List<DrawInfo> ınfo = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
             return Ok(ınfo);
         }
-        [HttpGet]
-        [Route("trackDraws")]
-        public async Task<IActionResult> getTrackData(int id)
-        {
 
-            string filePath = @"C:\Users\Casper\source\repos\WebUygAPI\WebUygAPI\LineData.json";
-            using (StreamReader file = new StreamReader(filePath))
-            {
-                string o1 = file.ReadToEnd();
-                var o2 = JsonConvert.SerializeObject(o1);
-
-            }
-            var json = System.IO.File.ReadAllText(filePath);
-            //var read = json.Split(new char[] { '\r', '\n', '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            List<DrawInfo> ınfo = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
-            var geodata = ınfo.Where(x => x.Id == id).FirstOrDefault();
-            if (geodata == null)
-            {
-                return NotFound();
-            }
-            return Ok(geodata);
-        }
 
         [HttpPost]
         [Route("SendDraw")]
         public async Task<ActionResult<DrawInfo>> addDraw(DrawInfo draw)
         {
-            string filePath = @"C:\Users\Casper\source\repos\WebUygAPI\WebUygAPI\LineData.json";
-            using (StreamReader file = new StreamReader(filePath))
+            if (ModelState.IsValid)
             {
-                string o1 = file.ReadToEnd();
-                var o2 = JsonConvert.SerializeObject(o1);
-            }
-            var json = System.IO.File.ReadAllText(filePath);
-            List<DrawInfo> info = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
-            Random random= new Random();
-            draw.Id = random.Next();
-            if(info == null) 
-            { 
-                return NotFound(); 
-            }
-            var result = System.Text.Json.JsonSerializer.Serialize(draw);
-            info.Add(draw);
-            string changedJson = System.Text.Json.JsonSerializer.Serialize(info, new JsonSerializerOptions() { WriteIndented = true });
+                string filePath = @"C:\Users\Casper\source\repos\WebUygAPI\WebUygAPI\LineData.json";
+                using (StreamReader file = new StreamReader(filePath))
+                {
+                    string o1 = file.ReadToEnd();
+                    var o2 = JsonConvert.SerializeObject(o1);
+                }
+                var json = System.IO.File.ReadAllText(filePath);
+                List<DrawInfo> info = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
+                Random random = new Random();
+                draw.Id = random.Next();
+                if (info == null)
+                {
+                    return NotFound();
+                }
+                var result = System.Text.Json.JsonSerializer.Serialize(draw);
+                info.Add(draw);
+                string changedJson = System.Text.Json.JsonSerializer.Serialize(info, new JsonSerializerOptions() { WriteIndented = true });
 
-            System.IO.File.WriteAllText(filePath, changedJson);
+                System.IO.File.WriteAllText(filePath, changedJson);
 
-            return Ok(result);
+                return Ok(result);
+            }
+            return Ok();
 
         }
 
         [HttpPut]
-        [Route("UpdateDraw")]
-        public IActionResult UpdateDraw(int id,DrawInfo draw)
+        [Route("Update")]
+        public IActionResult Update(int id, DrawInfo draw)
         {
-            string filePath = @"C:\Users\Casper\source\repos\WebUygAPI\WebUygAPI\LineData.json";
-            using (StreamReader file = new StreamReader(filePath))
+            if (ModelState.IsValid)
             {
-                string o1 = file.ReadToEnd();
-                var o2 = JsonConvert.SerializeObject(o1);
+                string filePath = @"C:\Users\Casper\source\repos\WebUygAPI\WebUygAPI\LineData.json";
+                using (StreamReader file = new StreamReader(filePath))
+                {
+                    string o1 = file.ReadToEnd();
+                    var o2 = JsonConvert.SerializeObject(o1);
+                }
+                var json = System.IO.File.ReadAllText(filePath);
+
+                List<DrawInfo> info = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
+
+                var upDraw = info.FirstOrDefault(x => x.Id == id);
+
+                if (upDraw != null)
+                {
+                    upDraw.name = draw.name;
+                    upDraw.number = draw.number;
+                }
+
+                string changedJson = System.Text.Json.JsonSerializer.Serialize(info, new JsonSerializerOptions() { WriteIndented = true });
+                System.IO.File.WriteAllText(filePath, changedJson);
+                return Ok(info);
             }
-            var json = System.IO.File.ReadAllText(filePath);
 
-            List<DrawInfo> info = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
-
-            var upDraw = info.FirstOrDefault(x => x.Id == id);
-
-            if(upDraw != null) {
-                upDraw.Name = draw.Name;
-                upDraw.number = draw.number;
-                upDraw.coordinates = draw.coordinates;
-            }
-       
-            string changedJson = System.Text.Json.JsonSerializer.Serialize(info, new JsonSerializerOptions() { WriteIndented = true });
-            System.IO.File.WriteAllText(filePath, changedJson);
-            //System.IO.File.Delete(filePath);
-            //System.IO.File.Move(filePath, Drawings);
-            return Ok(changedJson);
-
+            return Ok();
         }
+
+        [HttpPut]
+        [Route("UpdateDraw")]
+        public IActionResult UpdateDraw(int id, DrawInfo draw)
+        {
+            if (ModelState.IsValid)
+            {
+                string filePath = @"C:\Users\Casper\source\repos\WebUygAPI\WebUygAPI\LineData.json";
+                using (StreamReader file = new StreamReader(filePath))
+                {
+                    string o1 = file.ReadToEnd();
+                    var o2 = JsonConvert.SerializeObject(o1);
+                }
+                var json = System.IO.File.ReadAllText(filePath);
+
+                List<DrawInfo> info = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
+
+                var upDraw = info.FirstOrDefault(x => x.Id == id);
+               
+                if (upDraw.Id == draw.Id)
+                {
+                    upDraw.name = draw.name;
+                    upDraw.number = draw.number;
+                    upDraw.coordinates = draw.coordinates;
+                }
+
+
+                string changedJson = System.Text.Json.JsonSerializer.Serialize(info, new JsonSerializerOptions() { WriteIndented = true });
+
+                System.IO.File.WriteAllText(filePath, changedJson);
+                return Ok(info);
+            }
+
+            return Ok();
+        }
+
+
+
+
 
         [HttpDelete]
         [Route("DeleteDraw")]
@@ -166,7 +191,6 @@ namespace WebUygAPI.Controllers
 
             }
             var json = System.IO.File.ReadAllText(filePath);
-            //var read = json.Split(new char[] { '\r', '\n', '\\' }, StringSplitOptions.RemoveEmptyEntries);
             List<DrawInfo> ınfo = JsonConvert.DeserializeObject<List<DrawInfo>>(json);
             return Ok(ınfo);
         }
